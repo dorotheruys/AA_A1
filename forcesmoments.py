@@ -12,5 +12,6 @@ def moments(rho, Vinf, vorticity, chord, thetas):
     C_M_LE = Mprime_LE / (0.5 * rho * Vinf * Vinf * chord * chord)
     return Mprime_LE, C_M_LE
 
-def delta_Cp(Vinf,vorticity):
-    return (2*vorticity/Vinf)
+
+def delta_Cp(Vinf, vorticity):
+    return 2*vorticity/Vinf
