@@ -1,10 +1,5 @@
 import numpy as np
 
-# Define the conditions
-Vinf = 10. #[m/s]
-AoA = 0. #[rad]
-rho = 1.225 #[kg/m3]
-chord = 0.25 #[m]
 
 def get_theta_from_x(x_lst, chord):
     # Inputs:
@@ -14,9 +9,10 @@ def get_theta_from_x(x_lst, chord):
     # Array of theta points [rad]
     theta_lst = []
     for x in x_lst:
-        theta = np.arccos(1-2*x/chord)
+        theta = np.arccos(1 - 2 * x / chord)
         theta_lst.append(theta)
     return np.array(theta_lst)
+
 
 def get_local_vorticity(AoA, Vinf, theta_lst):
     # Inputs:
@@ -27,8 +23,8 @@ def get_local_vorticity(AoA, Vinf, theta_lst):
     # Array of vorticity at theta points
     vorticity_lst = []
     for theta in theta_lst:
-        gamma = 2 * Vinf * AoA * (1 + np.cos(theta))/np.sin(theta)
+        gamma = 2 * Vinf * AoA * (1 + np.cos(theta)) / np.sin(theta)
         vorticity_lst.append(gamma)
-    return np.array(vorticity_lst)
-
-print(get_local_vorticity(AoA, Vinf, [0]))
+    vorticity_lst = np.array(vorticity_lst)
+    vorticity_lst[0] = 0
+    return vorticity_lst
