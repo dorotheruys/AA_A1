@@ -22,6 +22,6 @@ n_sections = 1000  # [-]
 chord_discr = np.linspace(0, chord, n_sections)  # [m], gets list of chord coordinates
 
 if __name__ == "__main__":
-    # plots.plot_Cl_alpha(AoA_range, chord, n_sections, Vinf, rho)
-    # plots.plot_Cm_alpha(AoA_range, chord, n_sections, Vinf, rho)
+    plots.plot_Cl_alpha(AoA_range, chord, n_sections, Vinf, rho)
+    plots.plot_Cm_alpha(AoA_range, chord, n_sections, Vinf, rho)
     plots.plot_Cp(AoA, chord, n_sections, Vinf)
