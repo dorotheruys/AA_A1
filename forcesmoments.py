@@ -2,6 +2,8 @@ import numpy as np
 
 
 def lift(rho, Vinf, vorticity, chord, thetas):
+    # Inputs:
+    # Vorticity distribution, Vinf, rho, chord, thetas
     lprime = 0.5 * chord * rho * Vinf * np.trapz(vorticity * np.sin(thetas), thetas)
     C_l = lprime / (0.5 * rho * Vinf * Vinf * chord)
     return lprime, C_l
