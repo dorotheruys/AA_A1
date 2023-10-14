@@ -3,11 +3,11 @@ import matplotlib.pyplot as plt
 
 # Define the conditions
 Vinf = 10.  # [m/s]
-AoA = 0.1  # [rad]
+AoA = np.deg2rad(5)  # [rad]
 
-AoA_min = -0.5  # [rad]
-AoA_max = 0.5  # [rad]
-n_angles = 100  # [-]
+AoA_min = np.deg2rad(-10)  # [rad]
+AoA_max = np.deg2rad(10)  # [rad]
+n_angles = 10  # [-]
 AoA_range = np.linspace(AoA_min, AoA_max, n_angles)  # [rad]
 
 rho = 1.225  # [kg/m3]
@@ -74,10 +74,12 @@ def plot_Cl_alpha(AoA_range, chord, n_sections, Vinf, rho):
 
     ref_Clalpha = 2 * np.pi * AoA_range
     delta = Cl_range - ref_Clalpha
+    AoA_range = np.rad2deg(AoA_range)
+
     plt.plot(AoA_range, Cl_range, label="$\mathregular{C_{l}}$ using thin-airfoil theory")
     plt.plot(AoA_range, ref_Clalpha, label="Reference $\mathregular{C_{l}}$ with slope of 2π")
     plt.plot(AoA_range, delta, label="Delta between approximation and reference")
-    plt.xlabel(r'$ \alpha $ [rad]')
+    plt.xlabel(r'$ \alpha $ [deg]')
     plt.ylabel("$\mathregular{C_{l}}$ [-]")
     plt.grid()
     plt.legend()
@@ -97,10 +99,11 @@ def plot_Cm_alpha(AoA_range, chord, n_sections, Vinf, rho):
 
     ref_Cmalpha = -0.5 * np.pi * AoA_range
     delta = Cm_range - ref_Cmalpha
+    AoA_range = np.rad2deg(AoA_range)
     plt.plot(AoA_range, Cm_range, label="$\mathregular{C_{m_{LE}}}$ using thin-airfoil theory")
     plt.plot(AoA_range, ref_Cmalpha, label="Reference $\mathregular{C_{m_{LE}}}$ with slope of -0.5π")
     plt.plot(AoA_range, delta, label="Delta between approximation and reference")
-    plt.xlabel(r'$ \alpha $ [rad]')
+    plt.xlabel(r'$ \alpha $ [deg]')
     plt.ylabel("$\mathregular{C_{m_{LE}}}$ [-]")
     plt.grid()
     plt.legend()
@@ -117,14 +120,14 @@ def plot_Cp(AoA, chord, n_sections, Vinf):
     plt.xlabel("x [m]")
     plt.ylabel("$\mathregular{C_{p}}$ [-]")
     plt.gca().invert_yaxis()
-    plt.ylim((1,-10))
+    plt.ylim((1, -10))
     plt.grid()
     plt.legend()
     plt.show()
 
 
 if __name__ == "__main__":
-    # plot_Cl_alpha(AoA_range, chord, n_sections, Vinf, rho)
-    # plot_Cm_alpha(AoA_range, chord, n_sections, Vinf, rho)
+    plot_Cl_alpha(AoA_range, chord, n_sections, Vinf, rho)
+    plot_Cm_alpha(AoA_range, chord, n_sections, Vinf, rho)
     plot_Cp(AoA, chord, n_sections, Vinf)
 
