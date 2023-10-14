@@ -11,20 +11,21 @@ n_angles = 100  # [-]
 AoA_range = np.linspace(AoA_min, AoA_max, n_angles)  # [rad]
 
 rho = 1.225  # [kg/m3]
-chord = 0.25  # [m]
-n_sections = 1000  # [-]
+chord = 1  # [m]
+n_sections = 150  # [-]
 
-chord_discr = np.linspace(0, chord, n_sections)  # [m], gets list of chord coordinates
+def theta_discr(n_sections):
+    theta_discr = np.linspace(0, np.pi, n_sections)
+    return theta_discr
 
-def get_theta_from_x(chord, n_sections):
-    # Inputs:
-    # list or array of x locations (not undimensionized with chord length [m]
-    # chord length of airfoil
-    # Output:
-    # Array of theta points [rad]
-    chord_discr = np.linspace(0,chord,n_sections)
-    theta = np.arccos(1-2*chord_discr/chord)
-    return theta, chord_discr
+def theta2(thetas):
+    theta2 = np.zeros(len(thetas)-1)
+    for i in range(len(theta2)):
+        theta2[i] = (thetas[i] + thetas[i+1])/2
+    return theta2
+
+def x_discr(thetas, chord):
+    return chord / 2 * (1 - np.cos(thetas))
 
 def get_local_vorticity(AoA, Vinf, thetas):
     # Inputs:
@@ -33,8 +34,7 @@ def get_local_vorticity(AoA, Vinf, thetas):
     # free stream velocity [m/s]
     # Output:
     # Array of vorticity at theta points
-    vorticities = np.zeros(len(thetas))
-    vorticities[1:] = 2 * Vinf * AoA * (1 + np.cos(thetas[1:])) / np.sin(thetas[1:])
+    vorticities = 2 * Vinf * AoA * (1 + np.cos(thetas)) / np.sin(thetas)
     return vorticities
 
 def lift_calc(rho, Vinf, vorticity, chord, thetas):
@@ -59,16 +59,17 @@ def moment_calc(rho, Vinf, vorticity, chord, thetas):
 
 def delta_Cp_calc(Vinf, vorticity):
     # Code to obtain delta-cp at the individual stations of the airfoil, using the freestream velocity and the vorticity distribution
-    return 2 * vorticity / Vinf
+    return -2 * vorticity / Vinf
 
 def plot_Cl_alpha(AoA_range, chord, n_sections, Vinf, rho):
-    thetas = get_theta_from_x(chord, n_sections)[0]
+    thetas = theta_discr(n_sections)
+    thetas_new = theta2(thetas)
 
     Cl_range = []
 
     for AoA in AoA_range:
-        vorticities = get_local_vorticity(AoA, Vinf, thetas)
-        lift = lift_calc(rho, Vinf, vorticities, chord, thetas)
+        vorticities = get_local_vorticity(AoA, Vinf, thetas_new)
+        lift = lift_calc(rho, Vinf, vorticities, chord, thetas_new)
         Cl_range.append(lift[1])
 
     ref_Clalpha = 2 * np.pi * AoA_range
@@ -84,13 +85,14 @@ def plot_Cl_alpha(AoA_range, chord, n_sections, Vinf, rho):
 
 
 def plot_Cm_alpha(AoA_range, chord, n_sections, Vinf, rho):
-    thetas = get_theta_from_x(chord, n_sections)[0]
+    thetas = theta_discr(n_sections)
+    thetas_new = theta2(thetas)
 
     Cm_range = []
 
     for AoA in AoA_range:
-        vorticities = get_local_vorticity(AoA, Vinf, thetas)
-        moments = moment_calc(rho, Vinf, vorticities, chord, thetas)
+        vorticities = get_local_vorticity(AoA, Vinf, thetas_new)
+        moments = moment_calc(rho, Vinf, vorticities, chord, thetas_new)
         Cm_range.append(moments[1])
 
     ref_Cmalpha = -0.5 * np.pi * AoA_range
@@ -106,12 +108,16 @@ def plot_Cm_alpha(AoA_range, chord, n_sections, Vinf, rho):
 
 
 def plot_Cp(AoA, chord, n_sections, Vinf):
-    thetas, chord_discr = get_theta_from_x(chord, n_sections)
-    vorticities = get_local_vorticity(AoA, Vinf, thetas)
+    thetas = theta_discr(n_sections)
+    thetas_new = theta2(thetas)
+    chord_discr = x_discr(thetas_new,chord)
+    vorticities = get_local_vorticity(AoA, Vinf, thetas_new)
     delta_Cp = delta_Cp_calc(Vinf, vorticities)
     plt.plot(chord_discr, delta_Cp, label="$\mathregular{C_{p}}$ distribution")
     plt.xlabel("x [m]")
     plt.ylabel("$\mathregular{C_{p}}$ [-]")
+    plt.gca().invert_yaxis()
+    plt.ylim((1,-10))
     plt.grid()
     plt.legend()
     plt.show()
@@ -121,3 +127,4 @@ if __name__ == "__main__":
     # plot_Cl_alpha(AoA_range, chord, n_sections, Vinf, rho)
     # plot_Cm_alpha(AoA_range, chord, n_sections, Vinf, rho)
     plot_Cp(AoA, chord, n_sections, Vinf)
+
