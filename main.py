@@ -15,6 +15,7 @@ rho = 1.225  # [kg/m3]
 chord = 1.  # [m]
 n_sections = 150  # [-]
 
+# Define the experimental data
 exp_AoA = np.deg2rad(4.18)
 exp_data_chord = np.array([0.001, 0.005, 0.01, 0.02, 0.05, 0.075, 0.1, 0.125, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5, 0.55, 0.6, 0.65, 0.8, 0.85, 0.9, 0.95])
 exp_data_cpu_4 = np.array([-3.1,-2.41, -1.82, -1.35, -0.93, -0.76, -0.64, -0.52, -0.46, -0.42, -0.37, -0.33, -0.3, -0.26, -0.22, -0.2, -0.17,-0.14, -0.07, 0.4, 0.06, 0.])
@@ -66,15 +67,6 @@ def delta_Cp_calc(Vinf, vorticity):
     # Code to obtain delta-cp at the individual stations of the airfoil, using the freestream velocity and the vorticity distribution
     return -2 * vorticity / Vinf
 
-def Cp_upper_and_lower(Vinf, Pinf, rho, vorticity):
-    P_u = 0.5 * rho * (Vinf - vorticity/2)
-    P_l = 0.5 * rho * (Vinf + vorticity/2)
-
-    Cp_u = (P_u - Pinf)/ (0.5 * Vinf * Vinf * rho)
-    Cp_l = (P_l - Pinf)/ (0.5 * Vinf * Vinf * rho)
-
-    return Cp_u, Cp_l
-
 def plot_Cl_alpha(AoA_range, chord, n_sections, Vinf, rho):
     thetas = theta_discr(n_sections)
     thetas_new = theta2(thetas)
@@ -99,7 +91,6 @@ def plot_Cl_alpha(AoA_range, chord, n_sections, Vinf, rho):
     plt.legend()
     plt.show()
 
-
 def plot_Cm_alpha(AoA_range, chord, n_sections, Vinf, rho):
     thetas = theta_discr(n_sections)
     thetas_new = theta2(thetas)
@@ -123,7 +114,6 @@ def plot_Cm_alpha(AoA_range, chord, n_sections, Vinf, rho):
     plt.legend()
     plt.show()
 
-
 def plot_Cp(AoA, chord, n_sections, Vinf):
     thetas = theta_discr(n_sections)
     thetas_new = theta2(thetas)
@@ -131,7 +121,7 @@ def plot_Cp(AoA, chord, n_sections, Vinf):
     vorticities = get_local_vorticity(AoA, Vinf, thetas_new)
     delta_Cp = delta_Cp_calc(Vinf, vorticities)
     AoA_deg = np.rad2deg(AoA)
-    plt.plot(chord_discr, delta_Cp, label=r' Code AoA = {:0.2f} [-]'.format(AoA_deg), color='red')
+    plt.plot(chord_discr, delta_Cp, label=r' Solver for AoA = {:0.2f} [deg]'.format(AoA_deg), color='red')
 
 def read_xfoil_file(name):
     f = open(name, 'r')
@@ -145,6 +135,8 @@ def read_xfoil_file(name):
                 dataupper.append([float(val) for val in values])
             elif float(values[1]) < 0:
                 datalower.append([float(val) for val in values])
+        else:
+            print(values)
     f.close()
 
     dataupper_array = np.array(dataupper)
@@ -162,7 +154,8 @@ def plot_xfoil_data(AoA_deg, xfoil_upper, xfoil_lower):
 
         index = np.where(xfoil_lower[:, 0] == x)
         if index[0].size > 0:
-            Cp_lower = xfoil_lower[index, 2][0]
+            test = xfoil_lower[index, 2][0][0]
+            Cp_lower = xfoil_lower[index, 2][0][0]
 
         deltaCp = Cp_upper - Cp_lower
         deltaCp_data.append(deltaCp)
@@ -174,40 +167,51 @@ def plot_xfoil_data(AoA_deg, xfoil_upper, xfoil_lower):
     return
 
 if __name__ == "__main__":
-    # plot_Cl_alpha(AoA_range, chord, n_sections, Vinf, rho)
-    # plot_Cm_alpha(AoA_range, chord, n_sections, Vinf, rho)
+    # Plot the C_l-alpha and C_m-alpha curves for a range of angles of attack to verify the program
+    #plot_Cl_alpha(AoA_range, chord, n_sections, Vinf, rho)
+    #plot_Cm_alpha(AoA_range, chord, n_sections, Vinf, rho)
 
+    # Ask for an input for angle of attack
     max_AoA_deg = (input('Max Angle of Attack [deg]? '))
 
+    # Discretize the theta in a linear way
     thetas = theta_discr(n_sections)
     thetas_new = theta2(thetas)
 
+    # Loop through all angles of attack from 1 to the one that was made an input above
     for AoA_deg in range(1, int(max_AoA_deg)+1, 1):
+        # Convert to radians
         AoA = np.deg2rad(AoA_deg)
+        # Get the local voricity distribution using the descretizes thetas
         vorticities = get_local_vorticity(AoA, Vinf, thetas_new)
+        # Calculate the corresponding lift coefficient
         C_l = lift_calc(rho, Vinf, vorticities, chord, thetas_new)
+        # Calculate the corresponding moment coefficient
         C_m = moment_calc(rho, Vinf, vorticities, chord, thetas_new)
 
         print('Lift coefficient C_l: ', C_l[1])
         print('Moment coefficient C_m: ', C_m[1])
 
+        # Read and plot the data from Xfoil
         dataupper_array, datalower_array = read_xfoil_file(f'cp-aoa{AoA_deg}')
-
         plot_xfoil_data(AoA_deg, dataupper_array, datalower_array)
+        # Plot the calculated delta C_p distribution
         plot_Cp(AoA, chord, n_sections, Vinf)
 
-    plt.xlabel("x [m]")
+    # Configure the plots
+    plt.xlabel("x/c [-]")
     plt.ylabel("$\Delta\mathregular{C_{p}}$ [-]")
     plt.gca().invert_yaxis()
-    plt.ylim((1, -4))
+    plt.ylim((1, -5))
     plt.grid()
     plt.legend(loc='upper right')
     plt.show()
 
+    # Plot the calculated delta C_p distribution versus NACA0006 experimental data for a specific angle of attack
     plot_Cp(exp_AoA, chord, n_sections, Vinf)
-    plt.plot(exp_data_chord, exp_data_deltacp_4, label=r'NACA0006 Exp. AoA = {:0.2f} [-]'.format(np.rad2deg(exp_AoA)))
+    plt.plot(exp_data_chord, exp_data_deltacp_4, label=r'NACA0006 Exp. for AoA = {:0.2f} [deg]'.format(np.rad2deg(exp_AoA)))
 
-    plt.xlabel("x [m]")
+    plt.xlabel("x/c [-]")
     plt.ylabel("$\Delta\mathregular{C_{p}}$ [-]")
     plt.gca().invert_yaxis()
     plt.ylim((1, -4))
