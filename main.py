@@ -13,7 +13,7 @@ AoA_range = np.linspace(AoA_min, AoA_max, n_angles)  # [rad]
 
 rho = 1.225  # [kg/m3]
 chord = 1.  # [m]
-n_sections = 10  # [-]
+n_sections = 100  # [-]
 
 exp_AoA = np.deg2rad(4.18)
 exp_data_chord = np.array(
@@ -109,7 +109,7 @@ def plot_Cl_alpha(AoA_range, chord, n_sections, Vinf, rho):
     AoA_range = np.rad2deg(AoA_range)
 
     plt.plot(AoA_range, Cl_range, label="$\mathregular{C_{l}}$ using thin-airfoil theory")
-    plt.plot(AoA_range, ref_Clalpha, label="Reference $\mathregular{C_{l}}$ with slope of 2π")
+    plt.plot(AoA_range, ref_Clalpha, label="Reference $\mathregular{C_{l}}$ with slope of 2$\pi$")
     plt.plot(AoA_range, delta, label="Delta between approximation and reference")
     plt.xlabel(r'$ \alpha $ [deg]')
     plt.ylabel("$\mathregular{C_{l}}$ [-]")
@@ -133,7 +133,7 @@ def plot_Cm_alpha(AoA_range, chord, n_sections, Vinf, rho):
     delta = Cm_range - ref_Cmalpha
     AoA_range = np.rad2deg(AoA_range)
     plt.plot(AoA_range, Cm_range, label="$\mathregular{C_{m_{LE}}}$ using thin-airfoil theory")
-    plt.plot(AoA_range, ref_Cmalpha, label="Reference $\mathregular{C_{m_{LE}}}$ with slope of -0.5π")
+    plt.plot(AoA_range, ref_Cmalpha, label="Reference $\mathregular{C_{m_{LE}}}$ with slope of -0.5$\pi$")
     plt.plot(AoA_range, delta, label="Delta between approximation and reference")
     plt.xlabel(r'$ \alpha $ [deg]')
     plt.ylabel("$\mathregular{C_{m_{LE}}}$ [-]")
